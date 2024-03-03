@@ -1,20 +1,33 @@
 import serial
+from PIL import Image
+import sys
 
 # Open the serial port
-ser = serial.Serial('COM3', 9600)
+ser = serial.Serial('COM3', 115200)
 
+data = Image.open('earth.bmp')
+saved_mode = data.mode
+saved_size = data.size
 # Read the file and send its contents
-with open('README.md', 'rb') as file:
-    file_content = file.read()
-    ser.write(file_content)
 
+ser.write(data.tobytes()[0:57600:1])
+i = 0    
+index = 57600
 try:
-    while True:
-        # Read a line of data from the Arduino
-        data = ser.readline().decode('utf-8').strip()
+    while i < 12:
+        tempData = ser.read(57600) 
+            
+        title = f"{i}.bmp"
         
-        # Print the received data
-        print(str(data))
+        
+        im = Image.frombytes('RGB', (480, 40), tempData)
+        im.save(title, format='BMP')
+        
+        i = i + 1
+        ser.write(data.tobytes()[index:index+57600:1])
+        index += 57600
+
+
         
 except KeyboardInterrupt:
     # Close the serial port when the script is interrupted
