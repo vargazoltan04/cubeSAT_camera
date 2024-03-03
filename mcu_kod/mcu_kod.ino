@@ -1,11 +1,14 @@
 #include <stdio.h> 
+#include "Arduino.h"
+//#include <opencv2/opencv.hpp>
 
-const uint16_t BUFFER_SIZE = 1000;
+using namespace std;
+
+const uint16_t BUFFER_SIZE = 57600;
 uint8_t buffer[BUFFER_SIZE];
 void setup()
 {
-  pinMode(25, OUTPUT);
-  Serial.begin(9600);
+  Serial.begin(115200);
   digitalWrite(25, HIGH);
 }
 
@@ -13,21 +16,8 @@ void loop()
 {
   if (Serial.available() > 0)
   {
-    int bytesRead = Serial.readBytes(buffer, 1000);
-
-    processSerialData(bytesRead);
-
-    Serial.print("I received: ");
-    Serial.println(bytesRead);
+    int bytesRead = Serial.readBytes(buffer, BUFFER_SIZE);
+    
+    Serial.write(buffer, bytesRead);
   }
-}
-
-void processSerialData(int length) {
-  Serial.println("");
-  for (int i = 0; i < length; i++) {
-    char temp = buffer[i];
-    Serial.print(temp);
-  }
-  Serial.println("");
-  
 }
