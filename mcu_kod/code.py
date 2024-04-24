@@ -59,9 +59,8 @@ cam.flip_y = True
 #cam.test_pattern = OV7670_TEST_PATTERN_COLOR_BAR_FADE
 
 buf = bytearray(2 * cam.width * cam.height)
-chars = b" .:-=+*#%@"
 
-width = 2 * cam.width
+width = cam.width
 
 image_start_buffer = bytearray(2*width)
 for i in range(0, len(image_start_buffer)):
@@ -72,6 +71,5 @@ while True:
     serial = usb_cdc.data
     
     serial.write(image_start_buffer)
-    print(image_start_buffer)
     serial.write(buf)
-    time.sleep(10)
+    time.sleep(1)
