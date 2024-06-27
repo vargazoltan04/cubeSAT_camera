@@ -66,10 +66,21 @@ image_start_buffer = bytearray(2*width)
 for i in range(0, len(image_start_buffer)):
     image_start_buffer[i] = 0b0000_0000
 
+serial = usb_cdc.data
+i = 0
 while True:
+    while i < 640:
+        print(i)
+        one_byte_buf = serial.read(1)
+        print(one_byte_buf)
+        if one_byte_buf == b'\x00':
+            i += 1
+        else:
+            i = 0
+     
     cam.capture(buf)
-    serial = usb_cdc.data
-    
     serial.write(image_start_buffer)
     serial.write(buf)
-    time.sleep(1)
+    i = 0
+    
+

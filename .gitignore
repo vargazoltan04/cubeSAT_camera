@@ -1,3 +1,11 @@
+#Media files
+*.mp4
+*.bmp
+*.jpg
+*.jpeg
+*.png
+*.webp
+
 # Prerequisites
 *.d
 
