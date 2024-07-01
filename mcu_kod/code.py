@@ -30,45 +30,16 @@ from lib import interpreter
 # Ensure the camera is shut down, so that it releases the SDA/SCL lines,
 # then create the configuration I2C bus
 
-with digitalio.DigitalInOut(board.GP14) as shutdown:
-    shutdown.switch_to_output(True)
-    time.sleep(0.001)
-    bus = busio.I2C(board.GP1, board.GP0)
-
-cam = OV7670(
-    bus,
-    data_pins = [
-            board.GP6,
-            board.GP7,
-            board.GP8,
-            board.GP9,
-            board.GP10,
-            board.GP11,
-            board.GP12,
-            board.GP13
-        ],
-    clock=board.GP20,
-    vsync=board.GP18,
-    href=board.GP19,
-    mclk=board.GP21,
-    shutdown=board.GP14,
-    reset=board.GP15,
-)
-cam.size = OV7670_SIZE_DIV2
-cam.colorspace = OV7670_COLOR_RGB
-#print(cam.colorspace)
-cam.flip_y = True
 #cam.test_pattern = OV7670_TEST_PATTERN_COLOR_BAR_FADE
 
 #buf = bytearray(2 * cam.width * cam.height)
 #width = cam.width
 
 com = comm.Communication('$', '#', "COM6", 9600)
+interp = interpreter.interpreter('CAM', com) #Ez maga az interpreter osztály, paraméternek az eszköz nevét, meg 1 kommunikációs objektumot vár
 
 while True:
     input = com.wait_for_response()
-    
-    interp = interpreter.interpreter('CAM', com) #Ez maga az interpreter osztály, paraméternek az eszköz nevét, meg 1 kommunikációs objektumot vár
     interp.execute_command(input) #Átadja neki magát az üzenetet, megnézi hogy érvényes üzenet-e, ha igen lefuttatja amit le kell
 
 
