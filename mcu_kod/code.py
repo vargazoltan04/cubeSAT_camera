@@ -25,6 +25,8 @@ import board
 import usb_cdc
 
 from adafruit_ov7670 import *
+from lib import communication as comm
+from lib import interpreter
 # Ensure the camera is shut down, so that it releases the SDA/SCL lines,
 # then create the configuration I2C bus
 
@@ -54,33 +56,23 @@ cam = OV7670(
 )
 cam.size = OV7670_SIZE_DIV2
 cam.colorspace = OV7670_COLOR_RGB
-print(cam.colorspace)
+#print(cam.colorspace)
 cam.flip_y = True
 #cam.test_pattern = OV7670_TEST_PATTERN_COLOR_BAR_FADE
 
-buf = bytearray(2 * cam.width * cam.height)
+#buf = bytearray(2 * cam.width * cam.height)
+#width = cam.width
 
-width = cam.width
+com = comm.Communication('$', '#', "COM6", 9600)
 
-image_start_buffer = bytearray(2*width)
-for i in range(0, len(image_start_buffer)):
-    image_start_buffer[i] = 0b0000_0000
-
-serial = usb_cdc.data
-i = 0
 while True:
-    while i < 640:
-        print(i)
-        one_byte_buf = serial.read(1)
-        print(one_byte_buf)
-        if one_byte_buf == b'\x00':
-            i += 1
-        else:
-            i = 0
-     
-    cam.capture(buf)
-    serial.write(image_start_buffer)
-    serial.write(buf)
-    i = 0
+    input = com.wait_for_response()
     
+    interp = interpreter.interpreter('CAM', com) #Ez maga az interpreter osztály, paraméternek az eszköz nevét, meg 1 kommunikációs objektumot vár
+    interp.execute_command(input) #Átadja neki magát az üzenetet, megnézi hogy érvényes üzenet-e, ha igen lefuttatja amit le kell
+
+
+
+        
+
 

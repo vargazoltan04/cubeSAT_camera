@@ -1,21 +1,17 @@
 import serial
 from PIL import Image
-import sys
-import cv2
 import numpy as np
-import time
+from communication import communication as comm
 
 # Open the serial port
 ser = serial.Serial('COM6', 115200, timeout=3)
 image_counter = 0
 vsync_counter = 0
-
 buf_send_next_im = bytearray(320*2)
 for i in range(0, len(buf_send_next_im)):
     buf_send_next_im[i] == 255
 def send_next_im():
     ser.write(buf_send_next_im)
-
 #The camera sends an image if it finds 640 white pixels. 
 send_next_im()
 while True: 
