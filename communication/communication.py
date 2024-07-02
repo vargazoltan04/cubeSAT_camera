@@ -6,6 +6,7 @@ class Communication:
         self.start = start
         self.end = end
         self.ser = serial.Serial('COM6', 115200, timeout=3)
+        self.log_file = open("log/log.txt", "w")
         
     def build_packet(self, content):
         #return self.start + str(b64.b64encode(bytes(content, 'ascii')))[2:-1] + self.end + str(0) + '*' + str(12345) + '\r' + '\n'
@@ -13,6 +14,7 @@ class Communication:
 
     def send_packet(self, packet):
         print("Sent: " + str(packet))
+        self.log_file.write("Sent: " + str(packet) + "\n")
         self.ser.write(packet)
 
     def wait_for_response(self):
@@ -22,6 +24,7 @@ class Communication:
             if bytes("\r\n", 'ascii') in packet:
                 break
 
+        self.log_file.write("Received: " + str(packet) + "\n\n")
         return packet
 
     def calc_checksum(self):

@@ -30,6 +30,8 @@ for i in range(4800):
 buf = bytearray(buf)
 print(len(buf))
 
+com.log_file.close()
+
 
 
 #innen csak megjelenít
