@@ -1,7 +1,7 @@
-import serial
+import binascii
 from PIL import Image
 import numpy as np
-from communication import communication as comm
+from communication import communication_pc as comm
 
 com = comm.Communication('$', '#', "COM6", 9600)
 
@@ -13,9 +13,7 @@ buf = bytes()
 for i in range(4800):
     com.send_packet(com.build_packet(bytes("CAM,SP," + str(i), 'ascii')))
     packet = com.wait_for_response()
-
     packet_str = str(packet)[2:-1]
-        
     #source_device = packet[1:4]
     
     packet_body: str = ""
@@ -25,13 +23,11 @@ for i in range(4800):
         else:
             packet_body += str(c)
             
-    params = packet_body.split(',')
-    buf += packet[5:37]
+    buf += binascii.a2b_base64(packet[5:37])
 buf = bytearray(buf)
 print(len(buf))
 
 com.log_file.close()
-
 
 
 #innen csak megjelenít
@@ -39,6 +35,7 @@ com.log_file.close()
 for i in range(0, len(buf),2):
     buf[i], buf[i+1] = buf[i+1], buf[i]
 
+print(len(buf))
 rgb565_array = np.frombuffer(buf, np.uint16).reshape(240, 320)
 print(len(rgb565_array))
 # Convert RGB565 to RGB888 (standard RGB)

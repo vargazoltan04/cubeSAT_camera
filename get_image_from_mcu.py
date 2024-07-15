@@ -1,7 +1,7 @@
 import serial
 from PIL import Image
 import numpy as np
-from communication import communication as comm
+from communication import communication_pc as comm
 
 # Open the serial port
 ser = serial.Serial('COM6', 115200, timeout=3)

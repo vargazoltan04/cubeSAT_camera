@@ -40,6 +40,7 @@ interp = interpreter.interpreter('CAM', com) #Ez maga az interpreter osztály, p
 
 while True:
     input = com.wait_for_response()
+    print("input: " + str(input))
     interp.execute_command(input) #Átadja neki magát az üzenetet, megnézi hogy érvényes üzenet-e, ha igen lefuttatja amit le kell
 
 
