@@ -44,14 +44,15 @@ class interpreter:
     def execute_command(self, packet):
         #source_device = packet[1::3]
         packet_str = str(packet)[2:-1]
-        packet_body_b64 = ""
+        packet_body_hex = ""
         for c in packet_str[1::]:
             if c == '#':
                 break
             else:
-                packet_body_b64 += str(c)
+                packet_body_hex += str(c)
         
-        packet_body = binascii.a2b_base64(packet_body_b64)
+        packet_body = binascii.unhexlify(packet_body_hex)
+        print(packet_body)
         params = str(packet_body)[2:-1].split(',')
         print(params)
         if params[1] == "STATUS":
@@ -67,4 +68,5 @@ class interpreter:
             lilbuf = self.buf[counter*32 : (counter + 1) * 32]
             response = self.com.build_packet(bytes("OBC,", 'ascii') + lilbuf)
             self.com.send_packet(response)
+
 

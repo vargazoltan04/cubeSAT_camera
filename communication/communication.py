@@ -9,7 +9,7 @@ class Communication:
         
     def build_packet(self, content):
         #return self.start + str(b64.b64encode(bytes(content, 'ascii')))[2:-1] + self.end + str(0) + '*' + str(12345) + '\r' + '\n'
-        return bytes(self.start, 'ascii') + binascii.b2a_base64(content).strip() + bytes(self.end + str(0) + '*' + str(12345) + '\r' + '\n', 'ascii')
+        return bytes(self.start, 'ascii') + binascii.hexlify(content) + bytes(self.end + str(0) + '*' + str(12345) + '\r' + '\n', 'ascii')
 
     def send_packet(self, packet):
         self.ser.write(packet)

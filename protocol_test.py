@@ -11,19 +11,24 @@ print(com.wait_for_response())
 
 buf = bytes()
 for i in range(4800):
-    com.send_packet(com.build_packet(bytes("CAM,SP," + str(i), 'ascii')))
+    print(str(i) + ": ")
+    command = com.build_packet(bytes("CAM,SP," + str(i), 'ascii'))
+    com.send_packet(command)
+    
     packet = com.wait_for_response()
     packet_str = str(packet)[2:-1]
     #source_device = packet[1:4]
     
-    packet_body: str = ""
+    packet_body_hex: str = ""
     for c in packet_str[1::]:
         if c == '#':
             break
         else:
-            packet_body += str(c)
+            packet_body_hex += str(c)
             
-    buf += binascii.a2b_base64(packet[5:37])
+
+    packet_body = binascii.unhexlify(packet_body_hex)
+    buf += packet_body[4:]
 buf = bytearray(buf)
 print(len(buf))
 
@@ -35,9 +40,7 @@ com.log_file.close()
 for i in range(0, len(buf),2):
     buf[i], buf[i+1] = buf[i+1], buf[i]
 
-print(len(buf))
 rgb565_array = np.frombuffer(buf, np.uint16).reshape(240, 320)
-print(len(rgb565_array))
 # Convert RGB565 to RGB888 (standard RGB)
 rgb888_array = np.zeros((rgb565_array.shape[0], rgb565_array.shape[1], 3), dtype=np.uint8)
 rgb888_array[:,:,0] = ((rgb565_array & 0b1111_1000_0000_0000) >> 8)  # Red component
