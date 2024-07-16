@@ -3,15 +3,14 @@ from PIL import Image
 import numpy as np
 from communication import communication_pc as comm
 
-com = comm.Communication('$', '#', "COM6", 9600)
+com = comm.Communication('$', '%', "COM6", 9600)
 
 
 com.send_packet(com.build_packet(bytes("CAM,TP",'ascii')))
 print(com.wait_for_response())
 
 buf = bytes()
-for i in range(4800):
-    print(str(i) + ": ")
+for i in range(6144):
     command = com.build_packet(bytes("CAM,SP," + str(i), 'ascii'))
     com.send_packet(command)
     
@@ -21,7 +20,7 @@ for i in range(4800):
     
     packet_body_hex: str = ""
     for c in packet_str[1::]:
-        if c == '#':
+        if c == '%':
             break
         else:
             packet_body_hex += str(c)
@@ -36,7 +35,6 @@ com.log_file.close()
 
 
 #innen csak megjelenít
-
 for i in range(0, len(buf),2):
     buf[i], buf[i+1] = buf[i+1], buf[i]
 

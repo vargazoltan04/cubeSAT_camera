@@ -1,15 +1,22 @@
 import binascii
 import usb_cdc
+import utils
 
 class Communication:
     def __init__(self, start, end, port, baud):
         self.start = start
         self.end = end
         self.ser = usb_cdc.data
-        
+    
     def build_packet(self, content):
-        #return self.start + str(b64.b64encode(bytes(content, 'ascii')))[2:-1] + self.end + str(0) + '*' + str(12345) + '\r' + '\n'
-        return bytes(self.start, 'ascii') + binascii.hexlify(content) + bytes(self.end + str(0) + '*' + str(12345) + '\r' + '\n', 'ascii')
+        start_bytes = bytes(self.start, 'ascii')
+        end_bytes = bytes(self.end, 'ascii')
+        content_hex = binascii.hexlify(content)
+
+        checksum = utils.calc_checksum(self.start, content, self.end)
+        carriage_return_bytes = bytes("\r\n", 'ascii')
+
+        return start_bytes + content_hex + end_bytes + checksum + carriage_return_bytes
 
     def send_packet(self, packet):
         self.ser.write(packet)

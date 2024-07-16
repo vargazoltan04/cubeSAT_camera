@@ -4,6 +4,7 @@ import busio
 import board
 import time
 import binascii
+import utils
 
 from adafruit_ov7670 import *
 
@@ -44,28 +45,42 @@ class interpreter:
     def execute_command(self, packet):
         #source_device = packet[1::3]
         packet_str = str(packet)[2:-1]
-        packet_body_hex = ""
-        for c in packet_str[1::]:
-            if c == '#':
+
+        checksum_received = packet_str.split('%')[1][0:2]
+        #print("checksum_received: " + checksum_received)
+
+        start_char = ""
+        end_char = ""
+        packet_body = ""
+
+        for c in packet_str[0::]:
+            if c == '$':
+                start_char = '$'
+                continue
+            if c == '%':
+                end_char = '%'
                 break
             else:
-                packet_body_hex += str(c)
+                packet_body += str(c)
         
-        packet_body = binascii.unhexlify(packet_body_hex)
-        print(packet_body)
-        params = str(packet_body)[2:-1].split(',')
-        print(params)
-        if params[1] == "STATUS":
-            response = self.com.build_packet(bytes("OBC,ACTIVE",'ascii'))
-            self.com.send_packet(response)
-        elif params[1] == "TP":
+
+        checksum_hex = utils.calc_checksum(start_char, bytes(packet_body, 'ascii'), end_char)
+        print(checksum_hex.decode('ascii') == checksum_received)
+        if checksum_hex.decode('ascii') != checksum_received:
+            return
+
+        params = str(packet_body).split(',')
+        #print("params: " + params + "\n")
+        #if params[1] == "STATUS":
+        #    response = self.com.build_packet(bytes("OBC,ACTIVE",'ascii'))
+        #    self.com.send_packet(response)
+        if params[1] == "TP":
             self.cam.capture(self.buf)
             response = self.com.build_packet(bytes("OBC,ACK", 'ascii'))
             self.com.send_packet(response)
         elif params[1] == "SP":
             counter = int(params[2])
-            
-            lilbuf = self.buf[counter*32 : (counter + 1) * 32]
+            lilbuf = self.buf[counter*25 : (counter + 1) * 25]
             response = self.com.build_packet(bytes("OBC,", 'ascii') + lilbuf)
             self.com.send_packet(response)
 

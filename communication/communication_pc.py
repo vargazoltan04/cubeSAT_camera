@@ -10,7 +10,14 @@ class Communication:
         
     def build_packet(self, content):
         #return self.start + str(b64.b64encode(bytes(content, 'ascii')))[2:-1] + self.end + str(0) + '*' + str(12345) + '\r' + '\n'
-        return bytes(self.start, 'ascii') + binascii.hexlify(content) + bytes(self.end + str(0) + '*' + str(12345) + '\r' + '\n', 'ascii')
+        start_bytes = bytes(self.start, 'ascii')
+        end_bytes = bytes(self.end, 'ascii')
+        checksum = sum(start_bytes + content + end_bytes) % 256
+        checksum_bytes = checksum.to_bytes(1, 'big')
+        checksum_hex = binascii.hexlify(checksum_bytes)
+        carriage_return_bytes = bytes("\r\n", 'ascii')
+        
+        return start_bytes + content + end_bytes + checksum_hex + carriage_return_bytes
 
     def send_packet(self, packet):
         print("Sent: " + str(packet))
@@ -25,6 +32,7 @@ class Communication:
             if carriage_return in packet:
                 break
 
+        print(str(len(packet)) + ": " + str(packet))
         print("Received: " + str(packet) + "\n\n")
         self.log_file.write("Received: " + str(packet) + "\n\n")
         return packet

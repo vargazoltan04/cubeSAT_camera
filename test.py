@@ -1,3 +1,4 @@
 import binascii
 
-print(len(binascii.unhexlify("4f42432c626b626b628b628b5a6b626b626b626b626b626b626b5a6b5a6b624b624b5a6b")))
+list = [0b01100001,0b01110011,0b01100100]
+print(sum(list) % 256)
