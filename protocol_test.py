@@ -33,6 +33,7 @@ for i in range(6144):
     checksum_received = packet_str.split('%')[1][0:2]
 
     buf += packet_body[4:]
+    #Szándékosan előidézett hiba teszteléshez
     #if checksum_received != checksum_calc or i % 100 == 0:
     #    errorlist.append(i)
 
