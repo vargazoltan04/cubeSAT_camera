@@ -1,5 +1,6 @@
 import binascii
 import serial
+from . import utils
 
 class Communication:
     def __init__(self, start, end, port, baud):
@@ -9,19 +10,12 @@ class Communication:
         self.log_file = open("log/log.txt", "w")
         
     def build_packet(self, content):
-        #return self.start + str(b64.b64encode(bytes(content, 'ascii')))[2:-1] + self.end + str(0) + '*' + str(12345) + '\r' + '\n'
-        start_bytes = bytes(self.start, 'ascii')
-        end_bytes = bytes(self.end, 'ascii')
-        checksum = sum(start_bytes + content + end_bytes) % 256
-        checksum_bytes = checksum.to_bytes(1, 'big')
-        checksum_hex = binascii.hexlify(checksum_bytes)
-        carriage_return_bytes = bytes("\r\n", 'ascii')
-        
-        return start_bytes + content + end_bytes + checksum_hex + carriage_return_bytes
+        content_bytes = bytes(self.start, 'ascii') + content + bytes(self.end, 'ascii')
+        return content_bytes + utils.calc_checksum(content_bytes) + bytes("\r\n", 'ascii')
 
-    def send_packet(self, packet):
-        print("Sent: " + str(packet))
-        self.log_file.write("Sent: " + str(packet) + "\n")
+    def send_packet(self, packet:bytes):
+        print("------------------------ \r\n Sent: " + packet.decode('ascii'))
+        self.log_file.write("------------------------ \r\n Sent: " + packet.decode('ascii'))
         self.ser.write(packet)
 
     def wait_for_response(self):
@@ -32,9 +26,8 @@ class Communication:
             if carriage_return in packet:
                 break
 
-        print(str(len(packet)) + ": " + str(packet))
-        print("Received: " + str(packet) + "\n\n")
-        self.log_file.write("Received: " + str(packet) + "\n\n")
+        print("Received: " + packet.decode('ascii'))
+        self.log_file.write("Received: " + packet.decode('ascii'))
         return packet
 
     def calc_checksum(self):
