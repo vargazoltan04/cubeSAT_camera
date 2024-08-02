@@ -3,6 +3,8 @@ import digitalio
 import busio
 import board
 import time
+import binascii
+import utils
 
 from adafruit_ov7670 import *
 
@@ -40,27 +42,47 @@ class interpreter:
         self.cam.colorspace = OV7670_COLOR_RGB
         self.cam.flip_y = True
 
-    def execute_command(self, packet):
+    def execute_command(self, packet: bytes):
         #source_device = packet[1::3]
-        packet_str = str(packet)[2:-1]
+        packet_str = packet.decode('ascii')
+
+        checksum_received = packet_str.split('%')[1][0:2]
+        #print("checksum_received: " + checksum_received)
+
+        start_char = ""
+        end_char = ""
         packet_body = ""
-        for c in packet_str[1::]:
-            if c == '#':
+
+        for c in packet_str[0::]:
+            if c == '$':
+                start_char = '$'
+                continue
+            if c == '%':
+                end_char = '%'
                 break
             else:
                 packet_body += str(c)
         
+
+        content_bytes = bytes(start_char, 'ascii') + bytes(packet_body, 'ascii') + bytes(end_char, 'ascii')
+        checksum_hex = utils.calc_checksum(content_bytes)
+        print(checksum_hex.decode('ascii') == checksum_received)
+        if checksum_hex.decode('ascii') != checksum_received:
+            return
+
         params = packet_body.split(',')
+        print("params: " + str(params) + "\n")
         if params[1] == "STATUS":
             response = self.com.build_packet(bytes("OBC,ACTIVE",'ascii'))
             self.com.send_packet(response)
-        elif params[1] == "TP":
+        if params[1] == "TP":
             self.cam.capture(self.buf)
             response = self.com.build_packet(bytes("OBC,ACK", 'ascii'))
             self.com.send_packet(response)
         elif params[1] == "SP":
             counter = int(params[2])
-            
-            lilbuf = self.buf[counter*32 : (counter + 1) * 32]
+            lilbuf = self.buf[counter*25 : (counter + 1) * 25]
             response = self.com.build_packet(bytes("OBC,", 'ascii') + lilbuf)
             self.com.send_packet(response)
+
+
