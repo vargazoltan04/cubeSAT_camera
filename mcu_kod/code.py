@@ -19,7 +19,7 @@ print(gc.mem_free())
 print(gc.mem_alloc())
 while True:
     input = com.wait_for_response()
-    print("input: " + str(input))
+    #print("input: " + str(input))
     interp.execute_command(input)
 
 

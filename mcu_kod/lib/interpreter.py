@@ -5,6 +5,7 @@ import board
 import time
 import binascii
 import utils
+import packet_c as pt
 
 from adafruit_ov7670 import *
 
@@ -42,36 +43,16 @@ class interpreter:
         self.cam.colorspace = OV7670_COLOR_RGB
         self.cam.flip_y = True
 
-    def execute_command(self, packet: bytes):
-        #source_device = packet[1::3]
-        packet_str = packet.decode('ascii')
-
-        checksum_received = packet_str.split('%')[1][0:2]
-        #print("checksum_received: " + checksum_received)
-
-        start_char = ""
-        end_char = ""
-        packet_body = ""
-
-        for c in packet_str[0::]:
-            if c == '$':
-                start_char = '$'
-                continue
-            if c == '%':
-                end_char = '%'
-                break
-            else:
-                packet_body += str(c)
-        
-
-        content_bytes = bytes(start_char, 'ascii') + bytes(packet_body, 'ascii') + bytes(end_char, 'ascii')
-        checksum_hex = utils.calc_checksum(content_bytes)
-        print(checksum_hex.decode('ascii') == checksum_received)
-        if checksum_hex.decode('ascii') != checksum_received:
+    def execute_command(self, packet: pt.packet):
+        if not packet.checksum_valid():
             return
 
-        params = packet_body.split(',')
-        print("params: " + str(params) + "\n")
+        params = packet.content.decode('ascii').split(',')
+        #print("params: " + str(params) + "\n")
+
+        if params[0] != "CAM":
+            return
+        
         if params[1] == "STATUS":
             response = self.com.build_packet(bytes("OBC,ACTIVE",'ascii'))
             self.com.send_packet(response)
