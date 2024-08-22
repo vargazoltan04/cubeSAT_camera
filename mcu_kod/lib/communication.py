@@ -1,6 +1,7 @@
 import binascii
 import usb_cdc
 import utils
+import packet_c as pt
 
 class Communication:
     def __init__(self, start, end, port, baud):
@@ -22,7 +23,8 @@ class Communication:
             carriage_return = bytes("\r\n", "ascii")
             if carriage_return in packet:
                 break
-            
+        
+        packet = pt.packet(packet)
         return packet
     
     def calc_checksum(self):
