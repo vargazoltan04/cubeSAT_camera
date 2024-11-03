@@ -1,5 +1,5 @@
 import binascii
-import usb_cdc
+#import usb_cdc
 import utils
 import packet_c as pt
 
@@ -7,7 +7,7 @@ class Communication:
     def __init__(self, start, end, port, baud):
         self.start = start
         self.end = end
-        self.ser = usb_cdc.data
+        #self.ser = usb_cdc.data
     
     def build_packet(self, content):
         content_bytes = bytes(self.start, 'ascii') + binascii.hexlify(content) + bytes(self.end, 'ascii')
